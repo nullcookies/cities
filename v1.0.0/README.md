@@ -53,7 +53,7 @@ project/
 
 ### 2. Импорт таблицы
 
-Выполните SQL из файла `v1.0.0/mod_belarus_cities.sql` или создайте таблицу вручную:
+Выполните SQL из файла `v1.0.0/install/install.sql` или создайте таблицу вручную:
 
 ```sql
 CREATE TABLE IF NOT EXISTS `mod_belarus_cities` (

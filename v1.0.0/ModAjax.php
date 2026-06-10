@@ -1,44 +1,52 @@
 <?php
-require_once("core2/inc/ajax.func.php");
 
+require_once DOC_ROOT . 'core2/inc/ajax.func.php';
+
+/**
+ * AJAX handlers for the cities module.
+ *
+ * Non-admin modules: the dispatcher prefixes every method with "ax",
+ * so $edit->save("xajax_saveCity(...)") → PHP calls axSaveCity().
+ */
 class ModAjax extends ajaxFunc {
 
-    private const TABLE = 'mod_belarus_cities';
 
+    /**
+     * @param xajaxResponse $res
+     */
     public function __construct(xajaxResponse $res) {
+
         parent::__construct($res);
         $this->module = 'cities';
     }
 
+
+    /**
+     * Save a city record (insert or update).
+     *
+     * Called via xajax_saveCity() from the edit form.
+     *
+     * @param array $data  Form values collected by xajax.getFormValues()
+     * @return xajaxResponse
+     * @throws \Exception
+     */
     public function axSaveCities(array $data): xajaxResponse {
+
         $fields = [
             'name_ru' => 'req',
         ];
+
+        $data['control'] = $this->clearData($data['control']);
 
         if ($this->ajaxValidate($data, $fields)) {
             return $this->response;
         }
 
-        $errors = [];
-        try {
-            if (!$this->getSessFormField($data['class_id'], 'refid')) {
-                $seq = $this->db->fetchOne("SELECT MAX(seq) + 5 FROM " . self::TABLE);
-                $data['control']['seq'] = $seq ?: 5;
-                if (empty($data['control']['is_active_sw'])) {
-                    $data['control']['is_active_sw'] = 'Y';
-                }
-            }
-            $this->saveData($data);
-        } catch (Exception $e) {
-            $errors[] = $e->getMessage();
+        if ( ! $this->saveData($data)) {
+            return $this->response;
         }
 
-        if (empty($errors)) {
-            $this->done($data);
-        } else {
-            $this->error[] = implode(", ", $errors);
-            $this->displayError($data);
-        }
+        $this->done($data);
         return $this->response;
     }
 }
